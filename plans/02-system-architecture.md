@@ -277,6 +277,7 @@ output4/
 import json, os
 env = os.environ.copy()
 env["PIPELINE_JOB_CONFIG"] = json.dumps(job["config_snapshot"])
+env["SKIP_DOCKER_START"] = "1"  # Scheduler 全权管理容器，round 脚本跳过
 
 subprocess.Popen([
     "uv", "run", "python", "-m", f"main.stages4.s4_{round_name}",
@@ -421,9 +422,122 @@ GPU 状态：FREE / IN_USE
 |-----------------|--------------|
 | `checkpoint.json` | 断点续跑：读取 `output4/jobs/{job_id}/checkpoint.json`，传给下一个 round 的 `--from-checkpoint` 参数 |
 | `s4_docker_utils.ensure_services()` | 每个 round 开始前调用，启动需要的微服务 |
-| `s4_service_map.ROUND_SERVICES` | 读取服务依赖表，确定需要哪些 profile |
+| `s4_service_map.ROUND_SERVICES` | 读取服务依赖表，确定每轮需要哪些 profile |
 | `run.log` | 追加写入 job-specific 的日志文件 |
 | `roundNN_final/` | 结果写入 `output4/job_id/roundNN_final/` |
+
+### 5.5 Docker 容器生命周期管理（新增）
+
+**问题**：现有 `s4_docker_utils.ensure_services()` 实现了按需启动，但缺少停止逻辑。容器以 `restart: unless-stopped` 模式运行，GPU 容器加载模型后占用 3-4GB 显存且不释放，导致 round5 OmegaFold（需要 24GB）时 GPU 碎片化。
+
+**方案**：Scheduler 在每个 round 前后协调容器状态。
+
+```python
+# s4_docker_utils.py 新增函数
+
+def stop_services(services: list[str]) -> bool:
+    """
+    停止并移除指定的微服务容器，释放 GPU 显存。
+    使用 docker compose rm -f -s（SIGTERM + 移除），
+    确保 CUDA 上下文被完全清理。
+    """
+    if not services:
+        return True
+    cmd = ["docker", "compose", "-f", str(COMPOSE_FILE), "rm", "-f", "-s"]
+    cmd.extend(services)
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode == 0:
+        for svc in services:
+            _health_cache.pop(svc, None)  # 清除缓存
+        return True
+    return False
+
+
+def reconcile_services(active_jobs: list[dict]) -> None:
+    """
+    根据所有活跃 job 的当前轮次，统一协调 Docker 容器状态。
+    对比"需要的服务集合"与"实际运行的服务集合"，启停差异部分。
+    天然支持将来多 job 并发场景。
+    """
+    all_needed = set()
+    for job in active_jobs:
+        if job.get("current_round"):
+            round_info = get_round_services(job["current_round"])
+            all_needed |= set(round_info["services"])
+    
+    running = get_running_containers()
+    to_stop = running - all_needed
+    if to_stop:
+        stop_services(list(to_stop))
+    to_start = all_needed - running
+    if to_start:
+        start_services(detect_profiles(to_start), list(to_start))
+```
+
+**Round 脚本适配**：round 脚本检测环境变量 `SKIP_DOCKER_START=1` 时跳过容器启动，只做 health check：
+
+```python
+# 每个 round 脚本中
+skip = os.environ.get("SKIP_DOCKER_START") == "1"
+ensure_services(SERVICE_LIST, skip_docker=skip)
+```
+
+Scheduler 启动 subprocess 前设置此环境变量，全权负责容器生命周期。
+
+**docker-compose.yml 变更**：移出 `restart: unless-stopped`，改为 `restart: "no"`。
+
+### 5.6 可靠性设计（新增）
+
+#### 5.6.1 超时保护
+
+| 级别 | 超时 | 行为 |
+|------|------|------|
+| Round 级别 | 6h | `asyncio.wait_for` → kill subprocess → job failed |
+| 微服务 health check | 120s | 标记不可用，round 自行处理 |
+| 容器启动 | 120s | `docker compose up` 超时，重试 3 次 |
+
+#### 5.6.2 分层重试
+
+| 失败类型 | 重试？ | 策略 |
+|---------|--------|------|
+| 容器 health check 失败 | 重试 3 次 | 等 30s 重新 start + wait |
+| HTTP 请求超时 | 重试 2 次 | 指数退避 5s → 15s |
+| Round 脚本 crash | 不重试 | 记录错误，job failed |
+| 磁盘满 / OOM | 不重试 | 告警级别，人工介入 |
+
+#### 5.6.3 心跳检测
+
+Scheduler 每隔 60s 更新 `jobs.last_heartbeat`。FastAPI 的 `/api/health` 检测心跳：
+
+```
+last_heartbeat > 5 分钟无更新 → /api/health 返回 degraded
+                             → 管理员人工介入
+```
+
+### 5.7 Scheduler 完整主循环（更新版）
+
+```
+Scheduler 主循环:
+  loop:
+    1. 检查 running job（崩溃恢复）
+       IF last_heartbeat > 5min → mark_failed
+       ELSE → 从 checkpoint 恢复
+    
+    2. 取下一个 pending job（FOR UPDATE SKIP LOCKED）
+       IF none → sleep(5s), continue
+    
+    3. FOR each round in ROUND_SEQUENCE:
+       a. reconcile_services([job])      # Docker 生命周期
+       b. 设置 env: SKIP_DOCKER_START=1, PIPELINE_JOB_CONFIG=...
+       c. asyncio.create_subprocess_exec(uv run python -m ...)
+       d. asyncio.wait_for(..., timeout=6h)
+       e. IF 超时: mark_failed; break
+       f. IF returncode != 0: mark_failed; break
+       g. update job_rounds + insert job_events
+    
+    4. reconcile_services([])            # 清理所有容器
+    5. update status = 'completed'
+```
 
 ---
 

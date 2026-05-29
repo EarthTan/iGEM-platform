@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: igem_platform
+      POSTGRES_USER: igem_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-igem_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U igem_user -d igem_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - igem_platform
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://igem_user:${POSTGRES_PASSWORD:-igem_dev_password}@postgres:5432/igem_platform
+      SECRET_KEY: ${SECRET_KEY:-dev_secret_key_change_in_production}
+      PIPELINE_ROOT: /app/iGEM-silk-main
+      OUTPUT_ROOT: /app/output4
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../iGEM-silk-main:/app/iGEM-silk-main:ro
+      - pipeline_output:/app/output4:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - igem_platform
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - igem_platform
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: scheduler/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://igem_user:${POSTGRES_PASSWORD:-igem_dev_password}@postgres:5432/igem_platform
+      PIPELINE_ROOT: /app/iGEM-silk-main
+      OUTPUT_ROOT: /app/output4
+      CUDA_VISIBLE_DEVICES: "0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../iGEM-silk-main:/app/iGEM-silk-main
+      - pipeline_output:/app/output4
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - igem_platform
+
+networks:
+  igem_platform:
+    name: igem_platform_network
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pipeline_output:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${OUTPUT4_PATH:-../iGEM-silk-main/output4}

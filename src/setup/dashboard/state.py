@@ -50,6 +50,31 @@ class StateCache:
     def last_tick_time(self) -> Optional[float]:
         return self._last_tick
 
+    def refresh_services(self) -> None:
+        """Refresh only the services portion of the snapshot.
+
+        Avoids waiting for the slow background tick (DB read can take ~10s
+        on first run when the view is large). Cheap: just one psutil + 9
+        HTTP probes.
+        """
+        try:
+            processes = self._proc.snapshot()
+            with self._lock:
+                if self._state:
+                    self._state["processes"] = processes
+        except Exception:
+            pass
+
+    def set_probe(self, enabled: bool) -> None:
+        """Toggle whether microservice /health probes run each tick.
+
+        In-memory only. Triggers an immediate services refresh so the new
+        probe state is visible without waiting for the next background tick.
+        """
+        self._probe = enabled
+        self._proc.probe = enabled
+        self.refresh_services()
+
     def snapshot(self) -> dict:
         with self._lock:
             return dict(self._state)

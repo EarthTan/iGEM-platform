@@ -59,3 +59,15 @@ def test_post_to_api_health_returns_405(client):
 def test_unknown_route_returns_404(client):
     r = client.get("/api/control")
     assert r.status_code == 404
+
+
+def test_probe_query_param_enables_probe(client):
+    cache = client.application.config["STATE_CACHE"]
+    # start with probe=False
+    assert cache._proc.probe is False
+    # probe=1 enables
+    client.get("/api/state?probe=1")
+    assert cache._proc.probe is True
+    # probe=0 disables
+    client.get("/api/state?probe=0")
+    assert cache._proc.probe is False

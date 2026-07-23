@@ -68,8 +68,39 @@ def test_subsystem_failure_does_not_break_tick(tmp_path: Path):
             time.sleep(0.1)
             if cache.last_tick_time() is not None:
                 break
-        # even with proc_inpector blowing up, snapshot should still be present
+        # even with proc_inspector blowing up, snapshot should still be present
         s = cache.snapshot()
         assert "generated_at" in s
+    finally:
+        cache.stop()
+
+
+def test_set_probe_toggles_and_refreshes(tmp_path: Path):
+    cache = StateCache(log_dir=str(tmp_path), dashboard_root="/tmp", probe=False)
+    _fast_collectors(cache)
+    cache.start()
+    try:
+        # wait for first tick to populate state
+        for _ in range(40):
+            time.sleep(0.1)
+            if cache.last_tick_time() is not None:
+                break
+        # before: probe is False
+        assert cache._proc.probe is False
+
+        # override proc snapshot to return a service with alive=True
+        cache._proc.snapshot = lambda: {
+            "enrich_py": [], "master_sh": [],
+            "services": {"algpred2": {"pid": None, "port": 8008, "alive": True, "rtt_ms": 7.0}},
+        }
+        # set_probe triggers refresh_services
+        cache.set_probe(True)
+        s_after = cache.snapshot()
+        assert s_after["processes"]["services"]["algpred2"]["alive"] is True
+        assert s_after["processes"]["services"]["algpred2"]["rtt_ms"] == 7.0
+
+        # toggle off
+        cache.set_probe(False)
+        assert cache._proc.probe is False
     finally:
         cache.stop()

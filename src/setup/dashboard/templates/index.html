@@ -23,14 +23,42 @@
   <section id="tools-overview">
     <h2>Tools overview</h2>
     <table id="tools-table">
-      <thead><tr><th>tool</th><th>done / eligible</th><th>%</th><th>status</th></tr></thead>
+      <thead><tr>
+        <th>tool</th>
+        <th class="num">done / eligible</th>
+        <th class="num">%</th>
+        <th>status</th>
+        <th>svc</th>
+      </tr></thead>
       <tbody></tbody>
     </table>
   </section>
 
   <section id="system">
     <h2>System</h2>
-    <div id="system-body">—</div>
+
+    <div class="sys-block">
+      <div class="sys-label">CPU</div>
+      <div class="sys-value" id="sys-cpu">—</div>
+    </div>
+
+    <div class="sys-block">
+      <div class="sys-label">Memory</div>
+      <div class="sys-value" id="sys-mem">—</div>
+    </div>
+
+    <div class="sys-block">
+      <div class="sys-label">GPU</div>
+      <div id="sys-gpu">—</div>
+    </div>
+
+    <div class="sys-block">
+      <div class="sys-label">Top 10 by CPU</div>
+      <table id="top-procs-table">
+        <thead><tr><th>pid</th><th>user</th><th>cpu%</th><th>rss MB</th><th>gpu MB</th><th>cmd</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </section>
 
   <section id="log-tail">
@@ -41,8 +69,23 @@
   <script>
     const initial = {{ initial_state | tojson }};
     let backoff = 2000;
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[c]);
+    }
+
+    function fmtNum(n, digits) {
+      if (n == null || isNaN(n)) return '—';
+      return Number(n).toFixed(digits == null ? 1 : digits);
+    }
+
     function render(s) {
+      // header
       document.getElementById('ts').textContent = s.generated_at || '—';
+
+      // current run
       const cur = s.current_run || {};
       const lb = cur.last_batch || {};
       document.getElementById('current-body').textContent =
@@ -51,26 +94,85 @@
         (lb.last_id ? 'last_id=' + lb.last_id + '  ' : '') +
         (lb.rate ? 'rate=' + lb.rate + ' seq/s  ' : '') +
         (lb.done ? 'done=' + lb.done + '  ' : '') +
-        (lb.done_pct != null ? lb.done_pct + '%  ' : '') +
+        (lb.done_pct != null ? 'pct=' + lb.done_pct + '%  ' : '') +
         (lb.eta ? 'eta=' + lb.eta : '');
+
+      // tools overview: sorted by pct desc, mapped services for "svc" column
+      const services = (s.processes || {}).services || {};
+      const tools = (s.tools_overview || []).slice().sort((a, b) => b.pct - a.pct);
       const tb = document.querySelector('#tools-table tbody');
-      tb.innerHTML = (s.tools_overview || []).map(t =>
-        '<tr><td>' + t.tool + '</td><td>' + t.done + ' / ' + t.eligible + '</td><td>' + t.pct + '</td><td>' + t.status + '</td></tr>'
-      ).join('');
+      tb.innerHTML = tools.map(t => {
+        const svc = services[t.tool];
+        let svcCell;
+        if (!svc || svc.alive === null) {
+          svcCell = '<span class="svc svc-unknown">—</span>';
+        } else if (svc.alive) {
+          svcCell = '<span class="svc svc-ok">✓ ' + (svc.rtt_ms != null ? svc.rtt_ms.toFixed(1) + 'ms' : '') + '</span>';
+        } else {
+          svcCell = '<span class="svc svc-down">✗ down</span>';
+        }
+        return '<tr>' +
+          '<td>' + esc(t.tool) + '</td>' +
+          '<td class="num">' + t.done + ' / ' + t.eligible + '</td>' +
+          '<td class="num">' + fmtNum(t.pct, 2) + '</td>' +
+          '<td>' + esc(t.status) + '</td>' +
+          '<td>' + svcCell + '</td>' +
+          '</tr>';
+      }).join('');
+
+      // system - extracted useful info
       const sys = s.system || {};
-      const cpu = sys.cpu || {}, mem = sys.memory || {}, gpu = sys.gpu || [];
-      const gpuLines = gpu.map(g => g.name + ' util=' + g.util_pct + '% mem=' + g.mem_used_gb + '/' + g.mem_total_gb + 'GB');
-      const top = (sys.top_procs || []).slice(0, 10).map(p =>
-        p.pid + ' ' + p.user + ' ' + p.cmd + '  cpu=' + p.cpu_pct + '%  rss=' + p.mem_rss_mb + 'MB' + (p.gpu_mem_mb ? '  gpu=' + p.gpu_mem_mb + 'MB' : '')
-      );
-      document.getElementById('system-body').textContent =
-        'cpu=' + cpu.pct + '% (' + (cpu.per_core || []).join(',') + ') load=' + (cpu.load_avg || []).join(',') + '\n' +
-        'mem=' + mem.used_gb + '/' + mem.total_gb + 'GB (' + mem.pct + '%)\n' +
-        'gpu:\n' + gpuLines.join('\n') + '\n' +
-        'top procs:\n' + top.join('\n');
+      const cpu = sys.cpu || {};
+      const mem = sys.memory || {};
+
+      document.getElementById('sys-cpu').textContent =
+        fmtNum(cpu.pct, 1) + '%  ' +
+        'load ' + (cpu.load_avg || []).map(x => fmtNum(x, 2)).join('/') + '  ' +
+        '(' + (cpu.n_cores || 0) + ' cores, per-core: ' + (cpu.per_core || []).map(x => fmtNum(x, 0)).join(' ') + ')';
+
+      document.getElementById('sys-mem').textContent =
+        fmtNum(mem.used_gb, 1) + ' / ' + fmtNum(mem.total_gb, 1) + ' GB ' +
+        '(' + fmtNum(mem.pct, 1) + '%, ' + fmtNum(mem.available_gb, 1) + ' GB free)';
+
+      const gpu = sys.gpu || [];
+      const gpuEl = document.getElementById('sys-gpu');
+      if (gpu.length === 0) {
+        gpuEl.textContent = 'no GPU';
+      } else {
+        gpuEl.innerHTML = '<table>' +
+          '<thead><tr><th>name</th><th>util%</th><th>mem%</th><th>mem GB</th><th>temp</th><th>power</th></tr></thead>' +
+          '<tbody>' +
+          gpu.map(g =>
+            '<tr>' +
+            '<td>' + esc(g.name) + '</td>' +
+            '<td class="num">' + fmtNum(g.util_pct, 0) + '</td>' +
+            '<td class="num">' + fmtNum(g.mem_pct, 1) + '</td>' +
+            '<td class="num">' + fmtNum(g.mem_used_gb, 1) + '/' + fmtNum(g.mem_total_gb, 1) + '</td>' +
+            '<td class="num">' + (g.temp_c != null ? g.temp_c + '°C' : '—') + '</td>' +
+            '<td class="num">' + (g.power_w != null ? fmtNum(g.power_w, 0) + 'W' : '—') + '</td>' +
+            '</tr>'
+          ).join('') +
+          '</tbody></table>';
+      }
+
+      // top procs
+      const topTb = document.querySelector('#top-procs-table tbody');
+      topTb.innerHTML = (sys.top_procs || []).map(p =>
+        '<tr>' +
+        '<td>' + p.pid + '</td>' +
+        '<td>' + esc(p.user) + '</td>' +
+        '<td class="num">' + fmtNum(p.cpu_pct, 1) + '</td>' +
+        '<td class="num">' + fmtNum(p.mem_rss_mb, 0) + '</td>' +
+        '<td class="num">' + (p.gpu_mem_mb ? p.gpu_mem_mb : '') + '</td>' +
+        '<td>' + esc(p.cmd) + '</td>' +
+        '</tr>'
+      ).join('');
+
+      // log tail
       const tail = (s.current_run || {}).log_tail || [];
       document.getElementById('log-body').textContent = tail.join('\n');
     }
+
     function poll() {
       fetch('/api/state').then(r => r.json()).then(s => {
         render(s);

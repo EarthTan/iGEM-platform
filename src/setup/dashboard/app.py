@@ -29,6 +29,13 @@ def create_app(log_dir: str, probe: bool = False):
 
     @app.route("/api/state")
     def api_state():
+        # query string ?probe=1 toggles the in-process probe flag for the
+        # next tick. In-memory only, no persistence.
+        from flask import request
+        if request.args.get("probe") == "1":
+            cache.set_probe(True)
+        elif request.args.get("probe") == "0":
+            cache.set_probe(False)
         return jsonify(cache.snapshot())
 
     @app.route("/api/health")

@@ -112,6 +112,52 @@ class BaseClient:
             results[-1].details["__batch_elapsed_sec"] = round(elapsed, 3)
         return results
 
+    def score_concurrent(
+        self, items: list[tuple[int, str]], n_workers: int
+    ) -> list[Score]:
+        """把 items 拆成 n_workers 份,多 httpx.Client 并发打同一 service。
+
+        用于打破单 client 的 GPU / 模型串行限制(实测 hemopi2 在单 GPU 上
+        单 client ~70 seq/s,8 并发可拉到 ~100 seq/s)。
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        if n_workers <= 1 or len(items) <= 1:
+            return self.score(items)
+
+        # 切等份(余数放前面)
+        chunk = (len(items) + n_workers - 1) // n_workers
+        chunks = [items[i : i + chunk] for i in range(0, len(items), chunk)]
+        t0 = time.time()
+
+        # 每个 worker 独立 httpx.Client(避免共享连接池争用)
+        def _one(sub: list[tuple[int, str]]) -> list[Score]:
+            local = httpx.Client(timeout=self.timeout)
+            try:
+                payload = {
+                    "sequences": [
+                        {"peptide_id": str(pid), "sequence": seq}
+                        for pid, seq in sub
+                    ]
+                }
+                r = local.post(
+                    f"{self.base_url}/predict/batch", json=payload
+                )
+                r.raise_for_status()
+                return self._parse(sub, r.json())
+            finally:
+                local.close()
+
+        with ThreadPoolExecutor(max_workers=n_workers) as ex:
+            results_nested = list(ex.map(_one, chunks))
+
+        results = [s for sub in results_nested for s in sub]
+        elapsed = time.time() - t0
+        if results:
+            results[-1].details["__batch_elapsed_sec"] = round(elapsed, 3)
+            results[-1].details["__concurrent_workers"] = n_workers
+        return results
+
     def close(self):
         self._client.close()
 

@@ -58,6 +58,12 @@ def main():
     p.add_argument("--restart-from-id", type=int, default=None)
     p.add_argument("--max-batches", type=int, default=None)
     p.add_argument("--check-coverage", action="store_true")
+    p.add_argument(
+        "--concurrent",
+        type=int,
+        default=1,
+        help="每个 batch 拆成 N 份并行打 service(用于打满 GPU)。hemopi2 建议 8。",
+    )
     args = p.parse_args()
 
     with DB() as db:
@@ -112,7 +118,10 @@ def main():
                 break
 
             t0 = time.time()
-            scores = dispatch_batch(args.tool, batch_rows)
+            if args.concurrent > 1:
+                scores = client.score_concurrent(batch_rows, args.concurrent)
+            else:
+                scores = client.score(batch_rows)
             elapsed = time.time() - t0
             elapsed_window.append(elapsed)
             if len(elapsed_window) > 20:

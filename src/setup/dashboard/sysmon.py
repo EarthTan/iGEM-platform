@@ -1,7 +1,7 @@
 """sysmon.py — read-only CPU / memory / GPU / top processes.
 
 Uses psutil for CPU/mem/procs, nvidia-smi for GPU (no pynvml C dep).
-All subprocess calls use list args (no shell=True), capture_output only,
+All subprocess calls use list args (no shell), capture_output only,
 timeouts enforced to avoid blocking the dashboard tick.
 """
 from __future__ import annotations

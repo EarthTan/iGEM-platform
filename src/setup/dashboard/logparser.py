@@ -130,7 +130,58 @@ class LogTailer:
             self._path = latest
             self._master_log_path = latest
             self._fh = open(latest, "rb")  # read-only, no lock
+            # reset state when switching files
+            self._tool = None
+            self._tool_started_at = None
+            self._recent_batches = []
+            self._offset = 0
+            # Seek to just past the most recent START line so we don't
+            # consume stale history (master log is append-only across runs).
+            self._seek_past_latest_start()
         return True
+
+    def _seek_past_latest_start(self) -> None:
+        """Find the latest START line, then seek to (EOF - 1MB) so we
+        start reading close to the file's tail.
+
+        8MB backwards-scan finds the latest START (tool switches are
+        <8MB apart in our enrichment master log). Then we open the
+        1MB tail window for read_recent — it contains ~3000 batch done
+        lines (enough to populate recent_batches + last_batch).
+        """
+        if self._fh is None:
+            return
+        try:
+            self._fh.seek(0, 2)  # EOF
+            end = self._fh.tell()
+            scan_window = min(end, 8 * 1024 * 1024)
+            self._fh.seek(end - scan_window)
+            chunk = self._fh.read(scan_window)
+        except Exception:
+            return
+        # find the LAST "START tool=" match
+        last_start_idx = chunk.rfind(b"START tool=")
+        if last_start_idx == -1:
+            return
+        # walk back to the start of that line
+        line_start = chunk.rfind(b"\n", 0, last_start_idx)
+        if line_start == -1:
+            line_start = 0
+        else:
+            line_start += 1  # skip the newline
+        prefix = chunk[line_start:]
+        # ingest the START line so _tool is set
+        for raw_line in prefix.decode("utf-8", errors="replace").splitlines():
+            self._ingest(raw_line)
+        # now seek to (EOF - 1MB) so we capture recent batches
+        try:
+            self._fh.seek(0, 2)
+            end = self._fh.tell()
+            tail_window = min(end, 1024 * 1024)
+            self._fh.seek(end - tail_window)
+        except Exception:
+            self._fh.seek(0)
+        self._offset = self._fh.tell()
 
     @property
     def master_log_path(self) -> Optional[Path]:

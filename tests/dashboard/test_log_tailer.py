@@ -104,3 +104,24 @@ def test_read_recent_returns_empty_if_log_disappears(tmp_path: Path):
     state2 = t.read_recent()
     # either empty (log re-detected as missing) or last good state — both are non-crashing
     assert "tool" in state2 or state2 == {}
+
+
+def test_finds_current_tool_when_log_is_large(tmp_path: Path):
+    """Master log is append-only across runs (no rotation). The first
+    START line is from a long-finished tool. LogTailer must identify the
+    LATEST START, not the first one."""
+    log = tmp_path / "master_20260721_130817.log"
+    # historical stuff (already-finished tool)
+    lines = [
+        "[2026-07-21T13:08:17] START tool=sodope batch=1000",
+        "batch done | last_id=1000 size=1000 inserted=1000 errs=0 | elapsed=0.05s | rate=19903.4 seq/s | done=1000 (50.0%) | ETA=0m00s",
+    ]
+    # current tool far later in the file
+    lines.append("[2026-07-21T23:15:09] START tool=hemopi2 batch=1000")
+    lines.append("batch done | last_id=19033000 size=1000 inserted=1000 errs=0 | elapsed=7.12s | rate=140.5 seq/s | done=19033000 (48.5%) | ETA=2h24m")
+    _write_log(log, lines)
+    t = LogTailer(str(tmp_path))
+    state = t.read_recent()
+    assert state["tool"] == "hemopi2", f"got {state['tool']}, expected hemopi2"
+    assert state["tool_started_at"] == "2026-07-21T23:15:09"
+    assert state["last_batch"]["last_id"] == 19033000

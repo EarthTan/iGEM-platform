@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>iGEM dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>iGEM dashboard</h1>
+    <div id="meta">
+      <span>updated: <span id="ts">—</span></span>
+      <a href="?probe=1">probe services</a>
+      <a href="{{ url_for('api_state') }}">/api/state</a>
+    </div>
+  </header>
+
+  <section id="current-run">
+    <h2>Current run</h2>
+    <div id="current-body">—</div>
+  </section>
+
+  <section id="tools-overview">
+    <h2>Tools overview</h2>
+    <table id="tools-table">
+      <thead><tr><th>tool</th><th>done / eligible</th><th>%</th><th>status</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="system">
+    <h2>System</h2>
+    <div id="system-body">—</div>
+  </section>
+
+  <section id="log-tail">
+    <h2>Log tail</h2>
+    <pre id="log-body">—</pre>
+  </section>
+
+  <script>
+    const initial = {{ initial_state | tojson }};
+    let backoff = 2000;
+    function render(s) {
+      document.getElementById('ts').textContent = s.generated_at || '—';
+      const cur = s.current_run || {};
+      const lb = cur.last_batch || {};
+      document.getElementById('current-body').textContent =
+        (cur.tool ? 'tool=' + cur.tool + '  ' : '') +
+        (cur.tool_started_at ? 'started=' + cur.tool_started_at + '  ' : '') +
+        (lb.last_id ? 'last_id=' + lb.last_id + '  ' : '') +
+        (lb.rate ? 'rate=' + lb.rate + ' seq/s  ' : '') +
+        (lb.done ? 'done=' + lb.done + '  ' : '') +
+        (lb.done_pct != null ? lb.done_pct + '%  ' : '') +
+        (lb.eta ? 'eta=' + lb.eta : '');
+      const tb = document.querySelector('#tools-table tbody');
+      tb.innerHTML = (s.tools_overview || []).map(t =>
+        '<tr><td>' + t.tool + '</td><td>' + t.done + ' / ' + t.eligible + '</td><td>' + t.pct + '</td><td>' + t.status + '</td></tr>'
+      ).join('');
+      const sys = s.system || {};
+      const cpu = sys.cpu || {}, mem = sys.memory || {}, gpu = sys.gpu || [];
+      const gpuLines = gpu.map(g => g.name + ' util=' + g.util_pct + '% mem=' + g.mem_used_gb + '/' + g.mem_total_gb + 'GB');
+      const top = (sys.top_procs || []).slice(0, 10).map(p =>
+        p.pid + ' ' + p.user + ' ' + p.cmd + '  cpu=' + p.cpu_pct + '%  rss=' + p.mem_rss_mb + 'MB' + (p.gpu_mem_mb ? '  gpu=' + p.gpu_mem_mb + 'MB' : '')
+      );
+      document.getElementById('system-body').textContent =
+        'cpu=' + cpu.pct + '% (' + (cpu.per_core || []).join(',') + ') load=' + (cpu.load_avg || []).join(',') + '\n' +
+        'mem=' + mem.used_gb + '/' + mem.total_gb + 'GB (' + mem.pct + '%)\n' +
+        'gpu:\n' + gpuLines.join('\n') + '\n' +
+        'top procs:\n' + top.join('\n');
+      const tail = (s.current_run || {}).log_tail || [];
+      document.getElementById('log-body').textContent = tail.join('\n');
+    }
+    function poll() {
+      fetch('/api/state').then(r => r.json()).then(s => {
+        render(s);
+        backoff = 2000;
+      }).catch(() => {
+        backoff = Math.min(backoff * 2, 30000);
+      }).finally(() => setTimeout(poll, backoff));
+    }
+    render(initial);
+    setTimeout(poll, 2000);
+  </script>
+</body>
+</html>

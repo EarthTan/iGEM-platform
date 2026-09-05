@@ -1,0 +1,23 @@
+temperature_C,n_group,mean_raw,p50_raw
+40,thermophilic,0.702015,—
+45,thermophilic,0.679588,—
+50,thermophilic,0.612193,—
+55,thermophilic,0.594343,—
+60,thermophilic,0.448731,—
+65,thermophilic,0.442417,—
+40,mesophilic,0.396074,—
+45,mesophilic,0.365139,—
+50,mesophilic,0.333657,—
+55,mesophilic,0.346238,—
+60,mesophilic,0.215421,—
+65,mesophilic,0.223476,—
+40,overall(n=20248885),0.581664,0.602900
+45,overall(n=20248885),0.555890,0.577000
+50,overall(n=20248885),0.502622,0.511800
+55,overall(n=20248885),0.496743,0.508500
+60,overall(n=20248885),0.356951,0.349000
+65,overall(n=20248885),0.356289,0.335200
+
+# 单调性(thermophilic mean 随温度变化),,,
+# monotonic decreasing?,True,,
+# mesophilic monotonic decreasing?,False,,

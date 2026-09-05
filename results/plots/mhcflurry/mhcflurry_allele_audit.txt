@@ -1,0 +1,55 @@
+========================================================================
+MHCflurry Allele Audit — iGEM-platform peptide_enrichment
+========================================================================
+generated_at_utc:    2026-08-25T05:20:12+00:00
+tool:                mhcflurry
+total_rows:          134,888
+distinct_alleles:    1
+null_allele_rows:    0
+first_scored_at:     2026-07-20 09:37:41.211521+08:00
+last_scored_at:      2026-07-21 23:15:09.285030+08:00
+active_hours:        2
+
+------------------------------------------------------------------------
+Allele distribution
+------------------------------------------------------------------------
+rank  allele                   count    pct_of_total
+1     HLA-A*02:01            134,888       100.0000%
+
+------------------------------------------------------------------------
+Interpretation
+------------------------------------------------------------------------
+⚠  HISTORICAL BASELINE (tool='mhcflurry'): this 134,888-row batch was
+   scored against a single allele (HLA-A*02:01). Score/affinity are NOT
+   aggregated across alleles — this is the pre-2026-08-25 baseline run.
+
+   Root cause (historical, no longer applies):
+     - server-side:  DEFAULT_ALLELE = "HLA-A*02:01" (still the fallback)
+     - client-side:  MhcflurryClient did not forward any allele parameter
+     - request schema: BatchPredictRequest.sequences[].* only carried
+                       sequence + peptide_id (no allele passthrough)
+
+   CURRENT CAPABILITY (since 2026-08-25, refactor commit):
+     - server-side:  BatchPredictRequest.allele (optional) is now read by
+                       MHCflurryService; fallback only when None.
+     - client-side:  enrich.py --alleles 'A*02:01,A*11:01,...' iterates;
+                       each allele is stored under derived tool name
+                       (mhcflurry-A0201, mhcflurry-A1101, ...).
+     - schema:       PredictRequest/BatchPredictRequest both carry
+                       optional allele field (backward compatible).
+
+   Immunogenicity interpretation (baseline ONLY):
+     - The 0.39% strong / 0.69% weak binder rates reflect binding to HLA-A*02:01
+       only — the most-frequent allele in European populations (~25-50%).
+     - For East-Asian-targeting immunogenicity assessment (PeptiCraft
+       primary market), a multi-allele panel run is required. The numbers
+       here are NOT a population-level immunogenicity estimate.
+     - For multi-allele panel results, look at tool='mhcflurry-A*' rows.
+
+------------------------------------------------------------------------
+Reproduction
+------------------------------------------------------------------------
+  PGPASSWORD=igem_local_2026 psql -h 127.0.0.1 -U igem -d igem_peptides \
+    -c "SELECT details->>'allele' AS allele, count(*) FROM peptide_enrichment"
+       -c "WHERE tool='mhcflurry' GROUP BY allele ORDER BY count DESC;"
+

@@ -1,0 +1,11 @@
+source,n,mean_score,epitope_pct
+legacy_mgy_2022,959793,0.2220,88.24
+legacy_uniprot_all_2021,24711,0.2223,84.99
+legacy_uniref90_2022,15607,0.2304,89.48
+uniprot_trembl,6832,0.2230,85.10
+uniref90,5402,0.2252,86.17
+pdb,776,0.2325,96.13
+legacy_pdb_2022,334,0.2420,95.51
+uniprot_sprot,164,0.2206,76.83
+legacy_bfd_2022,131,0.2303,91.60
+legacy_rfam_2022,36,0.1896,100.00

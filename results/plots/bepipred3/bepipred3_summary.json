@@ -1,0 +1,19 @@
+{
+  "tool": "bepipred3",
+  "version": "0.0.12.7 (bp3 library, GPU bf16 runner)",
+  "n_total": 20248885,
+  "score_min": 0.029853,
+  "score_max": 0.367407,
+  "score_mean": 0.22211,
+  "score_std": 0.052495,
+  "label_epitope": 17842900,
+  "label_non_epitope": 2405985,
+  "label_error": 0,
+  "threshold": 0.1512,
+  "epitope_pct": 88.12,
+  "score_p01": 0.078344,
+  "score_p25": 0.200239,
+  "score_p50": 0.232519,
+  "score_p75": 0.257358,
+  "score_p99": 0.311515
+}

@@ -1,0 +1,22 @@
+{
+  "tool": "algpred2",
+  "library_size": 20248885,
+  "score_min": 0.010999999940395355,
+  "score_max": 0.9240000247955322,
+  "score_mean": 0.27197787165641785,
+  "score_median": 0.2680000066757202,
+  "score_std": 0.08320910483598709,
+  "score_q05": 0.14399999380111694,
+  "score_q95": 0.41200000047683716,
+  "score_q99": 0.492000013589859,
+  "threshold": 0.3,
+  "n_allergen": 7114908,
+  "n_nonallergen": 13133977,
+  "allergen_rate_global": 35.1373,
+  "frac_above_threshold": 35.1373,
+  "frac_above_0.5": 0.87,
+  "seq_len_range": [
+    1,
+    30
+  ]
+}

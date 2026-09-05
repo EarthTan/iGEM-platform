@@ -1,0 +1,17 @@
+{
+  "global": {
+    "n_total": 147540791,
+    "n_sb": 8139352,
+    "n_wb": 139401439,
+    "sb_pct": 5.516679112829211,
+    "n_alleles": 131,
+    "score_vs_rank_pearson": -0.7923835515975952,
+    "score_vs_rank_spearman": -0.7719489712118173,
+    "strong_cutoff_pct": 2.0,
+    "weak_cutoff_pct": 10.0
+  },
+  "thresholds": {
+    "sb": "<=2%",
+    "wb": "<=10%"
+  }
+}

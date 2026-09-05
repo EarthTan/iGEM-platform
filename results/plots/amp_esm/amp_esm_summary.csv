@@ -1,0 +1,18 @@
+metric,value
+sampled,500000
+amp_label_count,48076
+amp_label_pct,9.6152
+nonamp_label_count,451924
+nonamp_label_pct,90.3848
+error_label_count,0
+score_mean,0.153757
+score_median,0.03955
+score_std,0.206653
+score_min,3e-06
+score_max,0.846677
+log_scaled_mean,0.9221
+log_scaled_median,0.1753
+submodel_means,"[0.1479, 0.1122, 0.163, 0.2135, 0.1322]"
+modes,"{""imbalanced"": 500000}"
+versions,"{""v0.1.0"": 500000}"
+length_buckets,"{""1-10"": {""n"": 840, ""score_mean"": 0.159561, ""amp_rate"": 0.1012}, ""11-15"": {""n"": 2543, ""score_mean"": 0.153341, ""amp_rate"": 0.1038}, ""16-20"": {""n"": 27346, ""score_mean"": 0.046682, ""amp_rate"": 0.0148}, ""21-25"": {""n"": 216033, ""score_mean"": 0.156318, ""amp_rate"": 0.0991}, ""26-30"": {""n"": 253238, ""score_mean"": 0.16312, ""amp_rate"": 0.1023}}"

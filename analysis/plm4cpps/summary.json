@@ -1,0 +1,49 @@
+{
+  "tool": "plm4cpps",
+  "library_size": 20248885,
+  "background_sample": 500000,
+  "cpp_full_count": 681222,
+  "background_score_mean": 0.021886808797717094,
+  "background_score_std": 0.10209585726261139,
+  "background_score_med": 0.00033955826074816287,
+  "cpp_score_mean": 0.454045832157135,
+  "cpp_score_std": 0.3169615864753723,
+  "cpp_score_med": 0.281850129365921,
+  "cpp_score_min": 0.150000661611557,
+  "cpp_score_max": 1.0,
+  "cohens_d_full": 1.8353374004364014,
+  "cohens_d_reference": 7.19,
+  "roc_auc": 0.9831543273,
+  "threshold_recall_table": {
+    "0.05": {
+      "bg_pass": 1479019,
+      "cpp_pass": 681222,
+      "tpr": 1.0
+    },
+    "0.1": {
+      "bg_pass": 953762,
+      "cpp_pass": 681222,
+      "tpr": 1.0
+    },
+    "0.3": {
+      "bg_pass": 314951,
+      "cpp_pass": 310817,
+      "tpr": 0.4562638904791683
+    },
+    "0.5": {
+      "bg_pass": 234360,
+      "cpp_pass": 231166,
+      "tpr": 0.33934018572506464
+    },
+    "0.7": {
+      "bg_pass": 187059,
+      "cpp_pass": 184002,
+      "tpr": 0.2701057804944644
+    },
+    "0.9": {
+      "bg_pass": 138623,
+      "cpp_pass": 135506,
+      "tpr": 0.1989160655410424
+    }
+  }
+}

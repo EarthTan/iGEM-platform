@@ -1,0 +1,48 @@
+# mhcflurry multi-allele aggregation
+generated_at_utc,2026-08-25T09:51:48+00:00
+n_alleles_in_panel,23
+n_peptides,134888
+
+# best-case (max score / min affinity across alleles)
+  Non-Binder,123284,91.3973%
+  Weak Binder,9085,6.7352%
+  Strong Binder,2519,1.8675%
+
+# consensus (peptides binding across N alleles)
+  n_bound_distribution,"{0: 123284, 1: 4949, 2: 3008, 3: 1143, 4: 1098, 5: 483, 6: 367, 7: 270, 8: 120, 9: 72, 10: 39, 11: 20, 12: 14, 13: 8, 14: 4, 15: 1, 16: 8}"
+  n_strong_at_least_1,2519
+  consensus_3_or_more,3647
+  consensus_5_or_more,1406
+  total_alleles_in_panel,16
+  n_peptides_total,134888
+
+# per-allele binder counts
+tool,strong,weak,nonbinder,total,pct_strong,pct_weak
+mhcflurry-A0201,529,937,133422,134888,0.3922,0.6947
+mhcflurry-A0203,686,829,133373,134888,0.5086,0.6146
+mhcflurry-A0206,536,1073,133279,134888,0.3974,0.7955
+mhcflurry-A0207,384,1222,133282,134888,0.2847,0.9059
+mhcflurry-A0301,134,801,133953,134888,0.0993,0.5938
+mhcflurry-A1101,248,1042,133598,134888,0.1839,0.7725
+mhcflurry-A2402,127,816,133945,134888,0.0942,0.6049
+mhcflurry-A2601,7,113,134768,134888,0.0052,0.0838
+mhcflurry-A3101,189,1142,133557,134888,0.1401,0.8466
+mhcflurry-A3303,266,1531,133091,134888,0.1972,1.1350
+mhcflurry-B0702,174,1245,133469,134888,0.1290,0.9230
+mhcflurry-B1301,184,1869,132835,134888,0.1364,1.3856
+mhcflurry-B1502,241,2198,132449,134888,0.1787,1.6295
+mhcflurry-B3501,185,1092,133611,134888,0.1372,0.8096
+mhcflurry-B3802,108,696,134084,134888,0.0801,0.5160
+mhcflurry-B3901,18,523,134347,134888,0.0133,0.3877
+mhcflurry-B4001,83,496,134309,134888,0.0615,0.3677
+mhcflurry-B4402,48,659,134181,134888,0.0356,0.4886
+mhcflurry-B4601,6,579,134303,134888,0.0044,0.4292
+mhcflurry-B5101,16,684,134188,134888,0.0119,0.5071
+mhcflurry-B5201,51,2084,132753,134888,0.0378,1.5450
+mhcflurry-B5401,45,942,133901,134888,0.0334,0.6984
+mhcflurry-B5801,175,969,133744,134888,0.1297,0.7184
+
+"# baseline (A*02:01 single-allele, historical)"
+strong,529,0.3922%
+weak,937,0.6947%
+total,134888

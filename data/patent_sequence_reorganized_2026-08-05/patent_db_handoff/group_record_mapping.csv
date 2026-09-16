@@ -1,0 +1,30 @@
+﻿group_key,group_name,record_id,synthetic_record_id,applicant,patent_family,has_fasta,note
+jinbo_constructs,Jinbo HC8/HC16 and 16-repeat constructs,JINBO_HC8_CN103122027B_257aa,,Shanxi Jinbo Bio-Pharmaceutical Co. Ltd.,CN103122027B,Y,
+jinbo_constructs,Jinbo HC8/HC16 and 16-repeat constructs,JINBO_HC16_CN103122027B_501aa,,Shanxi Jinbo Bio-Pharmaceutical Co. Ltd.,CN103122027B,Y,
+jinbo_constructs,Jinbo HC8/HC16 and 16-repeat constructs,JINBO_rhCollagenIII_16x_repeat_SEQID4_480aa,,Shanxi Jinbo Bio-Pharmaceutical Co. Ltd.,US11396537B2 / US20200165319,Y,
+jinbo_constructs,Jinbo HC8/HC16 and 16-repeat constructs,JINBO_TEV_rhCollagenIII_16x_486aa,,Shanxi Jinbo Bio-Pharmaceutical Co. Ltd.,US11396537B2 / US20200165319,Y,
+jinbo_constructs,Jinbo HC8/HC16 and 16-repeat constructs,JINBO_rhCollagenIII_16x_plus_tail_490aa,,Shanxi Jinbo Bio-Pharmaceutical Co. Ltd.,US11396537B2 / US20200165319,Y,
+jinbo_devices,Jinbo-related medical devices,,,,,N/A,该组仅对应已上市医疗器械(NMPA 注册号)，主表中无对应序列记录；用于 experiments/groups 的组名→组键映射
+wuhan_trhcii1,Wuhan TRHCIII-1,COLLAGEN_WUHAN_TRHCIII_1_SEQID1_225aa,,Collagen (Wuhan) Biotechnology Co. Ltd.,CN115521372A/B,Y,
+trautec_col17,Trautec COL17 170801/170802,TRAUTEC_COL17_170801_SEQID2_233aa,,Jiangsu Trautec Medical Technology Co. Ltd.,US11787852B2 / CN113185604A,Y,
+trautec_col17,Trautec COL17 170801/170802,TRAUTEC_COL17_170802_SEQID3_466aa,,Jiangsu Trautec Medical Technology Co. Ltd.,US11787852B2 / CN113185604A,Y,
+trautec_col17,Trautec COL17 170801/170802,TRAUTEC_COL17_STREP_170801_HIS6_SEQID4_249aa,,Jiangsu Trautec Medical Technology Co. Ltd.,US11787852B2 / CN113185604A,Y,
+trautec_kefuyan,Trautec Kefuyan product,,,,,N/A,该组对应成品 Kefuyan，主表中无对应序列记录；用于 experiments/groups 的组名→组键映射
+bolt_18b,Bolt 18B,BOLT_18B_SEQID1_945aa,,Bolt Threads Inc.,US20240050352A1,Y,
+bolt_18b,Bolt 18B,BOLT_18B_repeat_SEQID2_315aa,,Bolt Threads Inc.,US20240050352A1,Y,
+eadf4_c16,eADF4(C16),eADF4_C16_560aa,,AMSilk GmbH / Evolved By Nature,WO2006008163A2 / US7951908B2,Y,
+eadf4_c16,eADF4(C16),eADF4_C16_repeat_unit_35aa,,AMSilk GmbH / Evolved By Nature,WO2006008163A2 / US7951908B2,Y,
+giant_fhlc,Giant Biogene FHLC,FHLC_SEQ_ID_NO_1,,Shaanxi Giant Biogene Technology Co. Ltd.,CN1371919A / CN1196712C / WO2003106494A1,Y,
+bellafill,Bellafill comparator,,TIGER_BELLAFILL,Tiger Aesthetics Medical / formerly Suneva,"Regulatory comparator: Bellafill, P020012",N,"无 FASTA 行；以 (applicant, patent_family) 精确匹配主表，取合成键"
+botox,BOTOX Cosmetic comparator,,ABBVIE_BOTOX,AbbVie / Allergan,Regulatory comparator: BOTOX Cosmetic BL 103000/5000,N,无 FASTA 行；匹配主表取合成键
+other_e1e2,Other E1/E2 patents,,BLOOMAGE_CN114805551A,"Bloomage Biotechnology (Tianjin) Co., Ltd. and affiliates",CN114805551A/B / WO2024002149,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,JINAN_CN116574172A,"Guangzhou Jinan University Medical Biotechnology R&D Center Co., Ltd.",CN116574172A/B,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,JINAN_CN116640231A,"Guangzhou Jinan University Medical Biotechnology R&D Center Co., Ltd.",CN116640231A/B,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,JEFFERSON_US5593859A,"Thomas Jefferson University; Academy of Finland; FibroGen, Inc.",US5593859A,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,BESTBEAUTY_CN117683116B,"Best Beauty Biotechnology (Zhejiang) Co., Ltd.",CN117683116B,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,GELTOR_US20250257107A1,"Geltor, Inc.",US20250257107A1,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,EBN_US9517191B2,Evolved By Nature-related entities,US9517191B2 / WO2020214854A1,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,BIOEFFECT_WO2010001417A2,BIOEFFECT-related entities,WO2010001417A2/A3,N,无 FASTA 行；精确匹配
+other_e1e2,Other E1/E2 patents,,SKINMEDICA_US8518879B2,SkinMedica-related entities,US8518879B2 / WO2012121695A1,N,无 FASTA 行；精确匹配
+unmapped,Yusong SF (未归入任一实验组),YUSONG_SF4_SEQID1_62aa,,Shanghai Yusong Biotechnology Co. Ltd.,CN121108286A,Y,实验明细表 12 组中未显式包含 Yusong；group_key 置 NULL
+unmapped,Yusong SF (未归入任一实验组),YUSONG_SF10_SEQID2_38aa,,Shanghai Yusong Biotechnology Co. Ltd.,CN121108286A,Y,实验明细表 12 组中未显式包含 Yusong；group_key 置 NULL

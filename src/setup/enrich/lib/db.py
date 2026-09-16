@@ -17,11 +17,18 @@ TOOL_LENGTH_RANGE: dict[str, tuple[int, int]] = {
     "tipred":     (1, 30),
     "algpred2":   (1, 30),
     "sodope":     (1, 30),
-    "anoxpepred": (1, 30),
+    "anoxpepred": (1, 30),  # legacy 命名, 2026-08-23 起改用 frs/chelating 两个 tool
+    "anoxpepred-frs": (1, 30),
+    "anoxpepred-chelating": (1, 30),
     "hemopi2":    (1, 40),
     "plm4cpps":   (1, 30),
+    # temstapro: 上游服务在全长蛋白训练,未在 3-30aa 短肽校准;此处的 (1,30) 仅表示
+    # 我们喂入的序列长度区间,与工具域内有效性无关。短肽上信号可信度见
+    # results/plots/temstapro_score_definition.md 与评估报告 §3。
     "temstapro":  (1, 30),
     "mhcflurry":  (5, 15),
+    "amp-esm":    (1, 30),
+    "bepipred3":  (1, 30),  # 2026-08-24: ESM-2 + 5-model DenseNet ensemble,1-30aa 短肽
 }
 
 

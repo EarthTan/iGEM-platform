@@ -65,6 +65,25 @@ PGPASSWORD=igem_local_2026 psql -h 127.0.0.1 -U igem -d igem_peptides \
 - `run.sh` — 9 工具串行调度
 - `logs/checkpoints/` — {tool}.json
 - `logs/enrich_run/` — master + per-tool 日志
+- `../../scripts/derive_anoxpepred_branches.sql` — 把 anoxpepred 单行拆成 frs/chelating 两行的派生脚本(2026-08-23)
+
+## AnOxPePred 分支拆分(2026-08-23)
+
+AnOxPePred 服务返回的 `details` JSON 同时含 `frs_score` 和 `chel_score` 两个独立分,
+为让下游分析 / Cohen's d 能独立选阈值,派生为两个 tool:
+
+| tool | 来源 | 说明 |
+|---|---|---|
+| `anoxpepred` | service 原始返回 | overall_score = 0.6\*frs + 0.4\*chel, label='Antioxidant' 仅 9588 条 (0.047%) |
+| `anoxpepred-frs` | derived | score = details->>'frs_score', label='FRS_active' if ≥0.5 else 'FRS_inactive' |
+| `anoxpepred-chelating` | derived | score = details->>'chel_score', label='Chel_active' if ≥0.5 else 'Chel_inactive' |
+
+烟囱测试(cohens_d,200k 抽样):
+- `anoxpepred-frs`: Cohen's d = **+2.82** (极强), N_active=17741
+- `anoxpepred-chelating`: N_active=**0**(Chel 训练正样本仅 81 条,模型几乎打不出 Chel ≥0.5)
+- 建议主筛选用 frs;chel 仅作弱信号参考
+
+重跑派生幂等:`psql -f scripts/derive_anoxpepred_branches.sql` 用 `ON CONFLICT DO UPDATE`,可反复执行
 
 ## 重启 / 中断恢复
 

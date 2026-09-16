@@ -32,11 +32,14 @@ FROM (
         ('tipred',     '1-30'),
         ('algpred2',   '1-30'),
         ('sodope',     '1-30'),
-        ('anoxpepred', '1-30'),
+        ('anoxpepred',         '1-30'),  -- legacy, 保留兼容(2026-08-23 派生为 frs/chelating 两行后仍可读)
+        ('anoxpepred-frs',     '1-30'),  -- 2026-08-23 新增, 由 anoxpepred.details->>'frs_score' 派生
+        ('anoxpepred-chelating','1-30'),  -- 2026-08-23 新增, 由 anoxpepred.details->>'chel_score' 派生
         ('hemopi2',    '1-40'),
         ('plm4cpps',   'length_supported'),
         ('temstapro',  'length_supported'),
-        ('mhcflurry',  '5-15')
+        ('mhcflurry',  '5-15'),
+        ('amp-esm',    '1-30')
 ) AS t(tool, eligible_filter)
 LEFT JOIN (
     SELECT tool, count(*) AS done,

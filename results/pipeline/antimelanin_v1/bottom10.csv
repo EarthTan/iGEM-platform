@@ -1,0 +1,11 @@
+id,channel,status,rank,peptide_id,sequence,length,source,tipred,func_score_meaning,toxinpred3,hemopi2,mhcflurry,netmhcipan_min_rank_pct,netmhcipan_min_sb_rank_pct,netmhcipan_has_sb,netmhcipan_n_alleles,plm4cpps,algpred2,bepipred3,aggrescan_a3v,composite_topical,composite_nano,composite_microneedle,composite_injection,assessed_hemo,assessed_mhci,assessed_mhcii
+630,bottom,WIP,,20563409,QRKRR,5,pdb,0.02555825002491474,ranking_only_not_probability,0.37,0.30562592,0.0,,,,,0.71661747,0.315,0.2926425,0.8252000212669373,0.0,0.0,0.0,0.0,True,True,True
+631,bottom,WIP,,299266,EQDRR,5,legacy_uniprot_all_2021,0.03645309805870056,ranking_only_not_probability,0.13,0.2982589,0.0,,,,,0.0019301571,0.397,0.27514827,0.8276000022888184,0.0,0.0,0.0,0.0,True,True,True
+632,bottom,WIP,,20574901,EQDRR,5,uniprot_sprot,0.03645309805870056,ranking_only_not_probability,0.13,0.2982589,0.0,,,,,0.0019301571,0.397,0.27514827,0.8276000022888184,0.0,0.0,0.0,0.0,True,True,True
+633,bottom,WIP,,112455,NNQQ,4,legacy_pdb_2022,0.038692962378263474,ranking_only_not_probability,0.11,0.21755183,,,,,,0.00023472616,0.391,0.2650053,0.762499988079071,0.0,0.0,0.0,0.0,True,False,True
+634,bottom,WIP,,20526251,NNQQ,4,pdb,0.038692962378263474,ranking_only_not_probability,0.11,0.21755183,,,,,,0.00023472616,0.391,0.2650053,0.762499988079071,0.0,0.0,0.0,0.0,True,False,True
+636,bottom,WIP,,118389,VDDDM,5,legacy_pdb_2022,0.050226159393787384,ranking_only_not_probability,0.27,0.19921595,0.0,,,,,0.003950143,0.334,0.22896092,0.2874000072479248,0.0,0.0,0.0,0.0,True,True,True
+635,bottom,WIP,,20537761,VDDDM,5,pdb,0.050226159393787384,ranking_only_not_probability,0.27,0.19921595,0.0,,,,,0.00395015,0.334,0.22896092,0.2874000072479248,0.0,0.0,0.0,0.0,True,True,True
+637,bottom,WIP,,20518283,NNNN,4,pdb,0.050323378294706345,ranking_only_not_probability,0.24,0.22725202,,,,,,0.008505349,0.377,0.27349716,0.7760000228881836,0.0,0.0,0.0,0.0,True,False,True
+638,bottom,WIP,,20565555,EKKR,4,pdb,0.05396907776594162,ranking_only_not_probability,0.325,0.31740236,,,,,,0.086024605,0.32,0.269535,0.856249988079071,0.0,0.0,0.0,0.0,True,False,True
+639,bottom,WIP,,20519524,NQ,2,pdb,0.05677461996674538,ranking_only_not_probability,0.12,0.26776096,,,,,,0.00016316323,0.391,0.2295066,0.762499988079071,0.0,0.0,0.0,0.0,True,False,True

@@ -1,0 +1,31 @@
+# mhcflurry_panel.tsv
+# Step B 多 allele 全量重算的 allele 面板
+# 目标人群: 中国大陆 / 东亚主导 + 跨人群兜底(PeptiCraft 主力市场)
+# 数据来源: Zhou 2011 (Tissue Antigens, 14,195 Han); He 2017; Shen 2019;
+#           Hong Kong BMDR; Gonzalez-Galarza 2020 AFND
+# 估算累计 A-locus 频率: 中国汉族 ~90-95%; B-locus ~80-85%
+# MHCflurry 模型支持确认: 23/23(2026-08-25)
+allele	freq_pct_zh_han	source
+A*02:01	13.0	Zhou 2011
+A*02:03	3.0	Zhou 2011
+A*02:06	3.0	Japan/Korea pooled
+A*02:07	5.0	He 2017
+A*11:01	24.0	Zhou 2011
+A*24:02	17.0	Zhou 2011 / Japan pooled
+A*26:01	3.0	North China
+A*31:01	3.0	Cross East Asia
+A*33:03	7.0	South China
+A*03:01	3.0	Cross Eurasia
+B*07:02	3.0	Cross Eurasia
+B*13:01	6.0	South China / SE Asia
+B*15:02	5.0	China / SE Asia
+B*35:01	3.0	Cross-population
+B*38:02	3.0	South China
+B*39:01	2.0	North China
+B*40:01	9.0	China / East Asia
+B*44:02	3.0	Cross Eurasia
+B*46:01	10.0	East Asia B#1 (China-specific)
+B*51:01	4.0	Cross-population
+B*52:01	2.0	Japan / Korea
+B*54:01	3.0	Japan / Korea
+B*58:01	5.0	South China

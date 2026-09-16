@@ -27,3 +27,6 @@ logs/
 .DS_Store
 .idea/
 .vscode/
+
+# Large legacy dumps (regenerable from PostgreSQL or export_aopxsvm.py)
+results/plots/aopxsvm_scores.tsv

@@ -39,6 +39,7 @@ PORT = {
     "mhcflurry":  8005,
     "bepipred3":  8002,
     "temstapro":  8010,
+    "amp-esm":    8011,
 }
 
 
@@ -74,13 +75,17 @@ class BaseClient:
         r.raise_for_status()
         return r.json()
 
-    def _post_batch(self, items: list[tuple[int, str]]) -> dict:
-        payload = {
+    def _post_batch(
+        self, items: list[tuple[int, str]], allele: str | None = None
+    ) -> dict:
+        payload: dict = {
             "sequences": [
                 {"peptide_id": str(pid), "sequence": seq}
                 for pid, seq in items
             ]
         }
+        if allele is not None:
+            payload["allele"] = allele
         r = self._client.post(f"{self.base_url}/predict/batch", json=payload)
         r.raise_for_status()
         return r.json()
@@ -102,18 +107,27 @@ class BaseClient:
                                  details))
         return results
 
-    def score(self, items: list[tuple[int, str]]) -> list[Score]:
+    def score(
+        self,
+        items: list[tuple[int, str]],
+        allele: str | None = None,
+    ) -> list[Score]:
         t0 = time.time()
-        resp = self._post_batch(items)
+        resp = self._post_batch(items, allele=allele)
         elapsed = time.time() - t0
         results = self._parse(items, resp)
         # 把 elapsed 写进最后一个 result 的 details(便于调度分析)
         if results:
             results[-1].details["__batch_elapsed_sec"] = round(elapsed, 3)
+            if allele is not None:
+                results[-1].details["__allele"] = allele
         return results
 
     def score_concurrent(
-        self, items: list[tuple[int, str]], n_workers: int
+        self,
+        items: list[tuple[int, str]],
+        n_workers: int,
+        allele: str | None = None,
     ) -> list[Score]:
         """把 items 拆成 n_workers 份,多 httpx.Client 并发打同一 service。
 
@@ -123,7 +137,7 @@ class BaseClient:
         from concurrent.futures import ThreadPoolExecutor
 
         if n_workers <= 1 or len(items) <= 1:
-            return self.score(items)
+            return self.score(items, allele=allele)
 
         # 切等份(余数放前面)
         chunk = (len(items) + n_workers - 1) // n_workers
@@ -134,12 +148,14 @@ class BaseClient:
         def _one(sub: list[tuple[int, str]]) -> list[Score]:
             local = httpx.Client(timeout=self.timeout)
             try:
-                payload = {
+                payload: dict = {
                     "sequences": [
                         {"peptide_id": str(pid), "sequence": seq}
                         for pid, seq in sub
                     ]
                 }
+                if allele is not None:
+                    payload["allele"] = allele
                 r = local.post(
                     f"{self.base_url}/predict/batch", json=payload
                 )
@@ -156,6 +172,8 @@ class BaseClient:
         if results:
             results[-1].details["__batch_elapsed_sec"] = round(elapsed, 3)
             results[-1].details["__concurrent_workers"] = n_workers
+            if allele is not None:
+                results[-1].details["__allele"] = allele
         return results
 
     def close(self):
@@ -226,3 +244,6 @@ _register(type("TemStaPro",  (BaseClient,), {"tool_name": "temstapro"}))
 _register(_register.__globals__["MhcflurryClient"])
 # bepipred3 跳过(性价比太低),但保留占位以便失败时友好报错
 TOOL_REGISTRY["bepipred3"] = type("BepiPred3", (BaseClient,), {"tool_name": "bepipred3"})()
+# amp-esm (v0.2.0 ESM-2 5-fold on GPU; service 内部已用 _infer_lock 串行化)
+# 实测~7 seq/s,concurrent client 帮不上忙(锁在外层)
+_register(type("AMPESM",     (BaseClient,), {"tool_name": "amp-esm"}))

@@ -15,7 +15,7 @@ mkdir -p "$LOG_DIR"
 # 默认 1(client 已经是 fast path,并发对 CPU 类帮助不大)。
 declare -A CONC=(
     [sodope]=1 [tipred]=1 [algpred2]=1 [anoxpepred]=1 [mhcflurry]=1
-    [hemopi2]=1 [plm4cpps]=1 [temstapro]=1 [toxinpred3]=1
+    [hemopi2]=1 [plm4cpps]=1 [temstapro]=1 [toxinpred3]=8
 )
 ORDER=(
     "sodope"      # 1205 seq/sec, ~4.5h
